@@ -126,21 +126,64 @@ router.get("/getMessages", async (req, res) => {
   res.status(200).json(message);
 });
 
+// router.post("/connection", async (req, res) => {
+//   try {
+//     const { userId, email } = req.body;
+//     console.log("id", userId, "connection", email);
+//     if (!userId && !email) {
+//       res.status(404).json({ error: "userID or Email is empty" });
+//     }
+
+//     // const connectionUserId = await User.findOne({ email }).select("_id");
+//     const connectionUser = await User.findOne({ email }).select("_id");
+//     // if (connectionUser) {
+//     //   res.status(500).json({ error: "invalid email" });
+//     // }
+//     const connectionUserId = connectionUser._id.toString();
+
+//     console.log("connectionUserId", connectionUserId);
+
+//     const updatedConnectionFrom = await Connection.findOneAndUpdate(
+//       { user: userId },
+//       { $addToSet: { connections: connectionUserId } },
+//       { upsert: true, new: true }
+//     );
+//     if (updatedConnectionFrom) {
+//       res.status(500).json({ error: "invalid Id" });
+//     }
+//     // const data = await Connection.findOneAndUpdate
+//     const updatedConnectionTo = await Connection.findOneAndUpdate(
+//       { user: connectionUserId },
+//       { $addToSet: { connections: userId } },
+//       { upsert: true, new: true }
+//     );
+//     res.status(200).json(updatedConnectionFrom);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+
 router.post("/connection", async (req, res) => {
   try {
     const { userId, email } = req.body;
     console.log("id", userId, "connection", email);
-    if (!userId && !email) {
-      res.status(404).json({ error: "userID or Email is empty" });
+
+    // Check if either userId or email is empty
+    if (!userId || !email) {
+      res.status(400).json({ error: "userId or Email is empty" });
+      return; // Stop further execution
     }
 
-    // const connectionUserId = await User.findOne({ email }).select("_id");
     const connectionUser = await User.findOne({ email }).select("_id");
-    if (connectionUser) {
-      res.status(500).json({ error: "invalid email" });
-    }
-    const connectionUserId = connectionUser._id.toString();
 
+    // Check if connectionUser is not found
+    if (!connectionUser) {
+      res.status(404).json({ error: "Invalid email" });
+      return; // Stop further execution
+    }
+
+    const connectionUserId = connectionUser._id.toString();
     console.log("connectionUserId", connectionUserId);
 
     const updatedConnectionFrom = await Connection.findOneAndUpdate(
@@ -148,15 +191,19 @@ router.post("/connection", async (req, res) => {
       { $addToSet: { connections: connectionUserId } },
       { upsert: true, new: true }
     );
-    if (updatedConnectionFrom) {
-      res.status(500).json({ error: "invalid Id" });
+
+    // Check if updatedConnectionFrom is not found
+    if (!updatedConnectionFrom) {
+      res.status(404).json({ error: "Invalid Id" });
+      return; // Stop further execution
     }
-    // const data = await Connection.findOneAndUpdate
+
     const updatedConnectionTo = await Connection.findOneAndUpdate(
       { user: connectionUserId },
       { $addToSet: { connections: userId } },
       { upsert: true, new: true }
     );
+
     res.status(200).json(updatedConnectionFrom);
   } catch (error) {
     console.error(error);
