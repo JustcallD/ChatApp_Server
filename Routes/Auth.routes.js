@@ -170,7 +170,7 @@ router.post("/connection", async (req, res) => {
     console.log("id", userId, "connection", email);
 
     // Check if either userId or email is empty
-    if (!userId || !email) {
+    if (!userId && !email) {
       res.status(400).json({ error: "userId or Email is empty" });
       return; // Stop further execution
     }
