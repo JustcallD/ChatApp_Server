@@ -5,6 +5,7 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
 
+
 const app = express();
 const server = createServer(app);
 app.use(
@@ -42,22 +43,6 @@ io.on("connection", (socket) => {
     io.emit("getUsers", users);
   });
 
-  // socket.on("send_message", (data) => {
-  //   console.log("sender id: " + socket.id);
-
-  //   const receiverData = getUser(data.receiver);
-  //   const toSocket = receiverData.socketId;
-  //   console.log("receiver", receiverData.socketId);
-  //   if (toSocket) {
-  //     console.log("receiverSocketId", toSocket);
-
-  //     io.to(socket.id).emit("receive_message", data);
-
-  //     io.to(toSocket).emit("receive_message", data);
-  //   } else {
-  //     console.log(`User ${data.receiver} is not currently connected.`);
-  //   }
-  // });
   socket.on("send_message", (data) => {
     console.log("sender id: " + socket.id);
 
@@ -92,9 +77,7 @@ io.on("connection", (socket) => {
 });
 const Auth = require("./Routes/Auth.routes");
 app.use("/", Auth);
-app.get("/",(req, res)=>{
-  res.send("hello world")
-});
+
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () =>
   console.log(`App listening on port http://localhost:${PORT}`)

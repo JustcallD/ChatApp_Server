@@ -103,10 +103,8 @@ router.post("/addMessages", async (req, res) => {
       text: text,
     });
 
-    // Save the updated message document
     await message.save();
 
-    // console.log("Message added successfully:", message);
     res
       .status(200)
       .json({ message: "Message added successfully", data: message });
@@ -115,15 +113,7 @@ router.post("/addMessages", async (req, res) => {
     res.status(500).json({ error: "Error adding message" });
   }
 });
-// router.get("/getMessages", async (req, res) => {
-//   const { participants } = req.body;
-//   console.log(participants);
-//   const message = await Message.findOne({
-//     participants: { $all: participants },
-//   });
 
-//   res.status(200).json(message);
-// });
 router.get("/getMessages", async (req, res) => {
   const participants = req.query.participants;
   // const { sender, receiver } = req.query;
@@ -135,14 +125,43 @@ router.get("/getMessages", async (req, res) => {
   // console.log(message);
   res.status(200).json(message);
 });
-// router.get("/getMessages", async (req, res) => {
-//   const { sender, receiver } = req.query; // Use req.query to get parameters from the URL
-//   console.log("{ sender, receiver }", { sender, receiver });
-//   const message = await Message.findOne({
-//     participants: { $all: [sender, receiver] },
-//   });
 
-//   res.status(200).json(message);
-// });
+router.post("/connection", async (req, res) => {
+  try {
+    const { userId, email } = req.body;
+    console.log("id", userId, "connection", email);
+    if (!userId && !email) {
+      res.status(404).json({ error: "userID or Email is empty" });
+    }
+
+    // const connectionUserId = await User.findOne({ email }).select("_id");
+    const connectionUser = await User.findOne({ email }).select("_id");
+    if (connectionUser) {
+      res.status(500).json({ error: "invalid email" });
+    }
+    const connectionUserId = connectionUser._id.toString();
+
+    console.log("connectionUserId", connectionUserId);
+
+    const updatedConnectionFrom = await Connection.findOneAndUpdate(
+      { user: userId },
+      { $addToSet: { connections: connectionUserId } },
+      { upsert: true, new: true }
+    );
+    if (updatedConnectionFrom) {
+      res.status(500).json({ error: "invalid Id" });
+    }
+    // const data = await Connection.findOneAndUpdate
+    const updatedConnectionTo = await Connection.findOneAndUpdate(
+      { user: connectionUserId },
+      { $addToSet: { connections: userId } },
+      { upsert: true, new: true }
+    );
+    res.status(200).json(updatedConnectionFrom);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 module.exports = router;
