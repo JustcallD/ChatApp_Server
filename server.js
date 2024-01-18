@@ -92,6 +92,9 @@ io.on("connection", (socket) => {
 });
 const Auth = require("./Routes/Auth.routes");
 app.use("/", Auth);
+app.get("/",(req, res)=>{
+  res.send("hello world")
+});
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () =>
   console.log(`App listening on port http://localhost:${PORT}`)
